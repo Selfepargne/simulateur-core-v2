@@ -1,0 +1,209 @@
+{
+  "_meta": {
+    "version": "2026.2",
+    "annee_reference": 2026,
+    "description": "Paramètres réglementaires du simulateur retraite Self Épargne — V2. Aligné sur le moteur actuel (pensionNetteMensuelle = brute − CSG − IR, décote LFI2026, suppression mode expert). Mettre à jour chaque année en janvier.",
+    "sources": [
+      "CNAV — Plafond Annuel de la Sécurité Sociale (PASS) 2026",
+      "AGIRC-ARRCO — Valeur et prix du point 2025",
+      "SSI / RCI — Barème des travailleurs indépendants",
+      "CNAVPL — Régime des professions libérales",
+      "CGI Art. 154 bis et 163 quatervicies — Plafond PER",
+      "BOFiP BOI-IR-LIQ-20-20-30 du 07/04/2026 — Décote LFI2026",
+      "Loi n° 2026-103 du 19/02/2026 de finances pour 2026, art. 4",
+      "Code de la Sécurité Sociale — Trimestres, décote, majoration"
+    ],
+    "changelog": [
+      "v2026.2 — Décote LFI2026 : base seul 897€, couple 1483€, seuils 1982/3277",
+      "v2026.2 — Barème IR actif mis à jour LFI2026 (tranches +0.9%)",
+      "v2026.2 — pensionNetteMensuelle = brute − CSG(8.3%) − IR (correction bug CSG)",
+      "v2026.2 — Suppression cnav.abattement_sam (bug corrigé : SAM sans abattement ×0.85)",
+      "v2026.2 — Suppression impot_revenu_actif (barème hardcodé dans FISCAL{})",
+      "v2026.2 — Ajout section fiscal{} avec toutes les constantes fiscales 2026",
+      "v2026.2 — taux_net_sur_brut_cadre 0.75→0.77, non_cadre 0.75→0.78",
+      "v2026.2 — Suppression mode expert fiscal (parcours utilisateur unifié)"
+    ]
+  },
+
+  "cnav": {
+    "_comment": "Régime de base — salariés, TNS, fonctionnaires",
+    "PASS": 48060,
+    "duree_reference_trimestres": 172,
+    "taux_maximum_base": 0.50,
+    "decote_par_trimestre_manquant_pct": 0.625,
+    "decote_maximum_pct": 25,
+    "age_taux_plein_automatique": 67,
+    "coefficient_anticipation_sans_taux_plein": 0.90,
+    "taux_prelevement_csg_retraite": 0.083
+  },
+
+  "agirc_arrco": {
+    "_comment": "Retraite complémentaire des salariés (cadres et non-cadres). Fusion 2019.",
+    "taux_cotisation_T1": 0.0628,
+    "taux_cotisation_T2": 0.1072,
+    "valeur_point": 1.4384,
+    "prix_achat_point": 18.248,
+    "plafond_T2_en_PASS": 8
+  },
+
+  "rci": {
+    "_comment": "Retraite complémentaire des indépendants (SSI — non-libéraux)",
+    "taux_cotisation_T1": 0.07,
+    "taux_cotisation_T2": 0.08,
+    "valeur_point": 0.6282,
+    "prix_achat_point": 20.1877
+  },
+
+  "cnavpl": {
+    "_comment": "Retraite complémentaire des professions libérales (hors avocats)",
+    "taux_remplacement": 0.20,
+    "annees_carriere_plein": 40.0,
+    "plafond_assiette_en_PASS": 3
+  },
+
+  "fonctionnaire": {
+    "_comment": "SRE (Régime de retraite des fonctionnaires) + RAFP",
+    "ratio_traitement_indiciaire": 0.78,
+    "taux_maximum_sre": 0.75,
+    "taux_rafp_annuel": 0.012
+  },
+
+  "salaries": {
+    "_comment": "Coefficients de passage brut → net par statut. Utilisés dans getTauxNet() et calculSalaireNet().",
+    "taux_net_sur_brut_cadre": 0.77,
+    "taux_net_sur_brut_non_cadre": 0.78,
+    "taux_net_sur_brut_fonctionnaire": 0.80,
+    "taux_net_sur_brut_tns_cnavpl": 0.73,
+    "taux_net_sur_brut_tns_ssi": 0.69
+  },
+
+  "trimestres": {
+    "_comment": "Règles d'acquisition et de majoration des trimestres",
+    "trimestres_bonus_par_enfant": 4,
+    "enfants_maximum_bonus_trimestres": 4,
+    "enfants_minimum_majoration_10pct": 3,
+    "taux_majoration_familiale": 0.10
+  },
+
+  "fiscal": {
+    "_comment": "Constantes fiscales LFI2026 — barème IR, décote, abattements, QF, CSG retraite. Source : BOFiP ACTU-2026-00022, loi n°2026-103 du 19/02/2026 art.4.",
+    "tranches": [
+      { "jusqu_a": 11600,  "taux": 0.00 },
+      { "jusqu_a": 29579,  "taux": 0.11 },
+      { "jusqu_a": 84577,  "taux": 0.30 },
+      { "jusqu_a": 181917, "taux": 0.41 },
+      { "jusqu_a": null,   "taux": 0.45 }
+    ],
+    "abatt_frais_min": 509,
+    "abatt_frais_max": 14298,
+    "abatt_pension_min": 504,
+    "abatt_pension_max": 4321,
+    "decote_base_seul": 897,
+    "decote_base_couple": 1483,
+    "decote_seuil_seul": 1982,
+    "decote_seuil_couple": 3277,
+    "decote_taux": 0.4525,
+    "plafond_qf_par_enfant": 1807,
+    "plafond_qf_parent_isole_1er": 4262,
+    "csg_retraite_taux": 0.083
+  },
+
+  "impot_revenu_retraite": {
+    "_comment": "Barème IR applicable à la retraite — utilisé pour le calcul de la TMI de sortie PER. Aligné LFI2026.",
+    "abattement_pension_min_euros": 504,
+    "abattement_pension_max_euros": 4321,
+    "abattement_pension_pct": 0.10,
+    "tranches": [
+      { "jusqu_a": 11600,  "taux": 0.00 },
+      { "jusqu_a": 29579,  "taux": 0.11 },
+      { "jusqu_a": 84577,  "taux": 0.30 },
+      { "jusqu_a": 181917, "taux": 0.41 },
+      { "jusqu_a": null,   "taux": 0.45 }
+    ]
+  },
+
+  "epargne_retraite": {
+    "_comment": "PER et règles de capitalisation utilisées dans les projections",
+    "rendement_accumulation_defaut_pct": 7,
+    "rendement_post_retraite_mode_capital_pct": 2.0,
+    "taux_rendement_perpetuel_rente_pct": 3.5,
+    "duree_retraite_mode_capital_ans": 20,
+    "pfu_gains_pct": 0.30,
+    "per_plafond_tns_tranche1_pct_assiette": 0.10,
+    "per_plafond_tns_tranche2_pct_excedent_pass": 0.15,
+    "per_plafond_salarie_pct_revenu_imposable": 0.10,
+    "per_plafond_en_pass_max": 8,
+    "per_minimum_garanti_pct_pass": 0.10
+  },
+
+  "seuils_affichage": {
+    "_comment": "Seuils utilisés pour la colorisation et les messages d'alerte dans l'interface",
+    "taux_remplacement_insuffisant": 0.45,
+    "taux_remplacement_correct": 0.70,
+    "hauts_revenus_liberaux_alerte": 150000
+  },
+
+  "pills_defaut": {
+    "_comment": "Valeurs par défaut des sélecteurs de l'interface résultats",
+    "rendement_defaut_pct": 7,
+    "niveau_vie_defaut_pct": 80
+  },
+
+  "tns_coefficients": {
+    "_comment": "Coefficients multiplicateurs appliqués à la retraite complémentaire selon la profession TNS.",
+    "Médecin libéral secteur 1": 2.50,
+    "Médecin libéral secteur 2": 2.20,
+    "Kinésithérapeute": 1.72,
+    "Infirmier libéral": 1.62,
+    "Orthophoniste": 1.68,
+    "Orthoptiste": 1.60,
+    "Podologue": 1.42,
+    "Pharmacien titulaire": 2.00,
+    "Chirurgien-dentiste": 2.00,
+    "Sage-femme libérale": 1.70,
+    "Avocat": 1.80,
+    "Expert-comptable": 1.70,
+    "Commissaire aux comptes": 1.70,
+    "Architecte": 1.40,
+    "Consultant libéral": 1.30,
+    "Artisan bâtiment": 1.15,
+    "Électricien indépendant": 1.10,
+    "Plombier": 1.10,
+    "Restaurateur": 1.05,
+    "Commerçant": 1.10,
+    "Développeur freelance": 1.30,
+    "Consultant IT": 1.35,
+    "Designer / graphiste": 1.10,
+    "Coach / formateur": 1.20,
+    "Agent immobilier indépendant": 1.30
+  },
+
+  "tns_regimes": {
+    "_comment": "Caisse de rattachement de chaque profession TNS.",
+    "Médecin libéral secteur 1":    { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Médecin libéral secteur 2":    { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Kinésithérapeute":             { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Infirmier libéral":            { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Orthophoniste":                { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Orthoptiste":                  { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Podologue":                    { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Pharmacien titulaire":         { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Chirurgien-dentiste":          { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Sage-femme libérale":          { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Architecte":                   { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Consultant libéral":           { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Avocat":                       { "regime": "CNAVPL", "label": "CNBF"   },
+    "Expert-comptable":             { "regime": "CNAVPL", "label": "CAVEC"  },
+    "Commissaire aux comptes":      { "regime": "CNAVPL", "label": "CAVEC"  },
+    "Artisan bâtiment":             { "regime": "SSI",    "label": "SSI"    },
+    "Électricien indépendant":      { "regime": "SSI",    "label": "SSI"    },
+    "Plombier":                     { "regime": "SSI",    "label": "SSI"    },
+    "Restaurateur":                 { "regime": "SSI",    "label": "SSI"    },
+    "Commerçant":                   { "regime": "SSI",    "label": "SSI"    },
+    "Développeur freelance":        { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Consultant IT":                { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Designer / graphiste":         { "regime": "SSI",    "label": "SSI"    },
+    "Coach / formateur":            { "regime": "CNAVPL", "label": "CNAVPL" },
+    "Agent immobilier indépendant": { "regime": "SSI",    "label": "SSI"    }
+  }
+}
